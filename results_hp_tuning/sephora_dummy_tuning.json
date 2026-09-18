@@ -1,0 +1,10 @@
+{
+    "dataset": "sephora",
+    "model": "dummy",
+    "best_params": {
+        "clf__strategy": "most_frequent"
+    },
+    "vectorizer": "tf-idf",
+    "feature_engineering": "kbest",
+    "best_score": "N/A"
+}

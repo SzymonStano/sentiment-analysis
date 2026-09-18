@@ -1,0 +1,11 @@
+{
+    "Dataset": "sephora",
+    "Model": "dummy",
+    "Params": {
+        "strategy": "most_frequent"
+    },
+    "Accuracy": 0.8386926726410121,
+    "Precision": 0.8386926726410121,
+    "Recall": 1.0,
+    "F1 Score": 0.9122706422018348
+}

@@ -1,0 +1,52 @@
+datasets:
+  sephora:
+    product_path: /app/data/raw/sephora/product_info.csv
+    review_glob: /app/data/raw//sephora/reviews_*.csv
+    merge_on: product_id
+    drop_columns:
+      - 'Unnamed: 0'
+      - author_id
+      - submission_time
+      - product_name_x
+      - product_name_y
+      - brand_name_x
+      - brand_name_y
+      - price_usd_y
+    label_column: 'LABEL-is_recommended'
+    max_samples: 10000
+
+  movies:
+    pos_path: /app/data/raw/movies/rt-polarity.pos
+    neg_path: /app/data/raw/movies/rt-polarity.neg
+    encoding: latin-1
+    drop_columns: []
+    label_column: 'class'
+
+split:
+  test_size: 0.2
+  # stratify: None
+  stratify: y
+
+clean:
+  sephora:
+    drop_columns:
+      - "variation_desc"
+      - "value_price_usd"
+      - "sale_price_usd"
+      - "child_max_price"
+      - "child_min_price"
+      - "primary_category"
+      - "size"
+      - "variation_value"
+      - "ingredients"
+  movies:
+      drop_columns: []
+
+tune:
+  tune_samples: 2500
+  random_search_iter: 15
+
+train:
+  feature_engineering: kbest # 'pca', 'None', 'kbest'
+  vectorizer: tf-idf # 'bow', 'word2vec'
+

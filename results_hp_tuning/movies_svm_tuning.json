@@ -1,0 +1,12 @@
+{
+    "dataset": "movies",
+    "model": "svm",
+    "best_params": {
+        "clf__C": 0.01129951608310662,
+        "clf__gamma": 0.06708188643346288,
+        "clf__kernel": "rbf"
+    },
+    "vectorizer": "tf-idf",
+    "feature_engineering": "kbest",
+    "best_score": 0.5770259707059611
+}

@@ -1,0 +1,13 @@
+{
+    "Dataset": "movies",
+    "Model": "rf",
+    "Params": {
+        "max_depth": 10,
+        "min_samples_split": 6,
+        "n_estimators": 51
+    },
+    "Accuracy": 0.5958743553680262,
+    "Precision": 0.5686537173476223,
+    "Recall": 0.795688847235239,
+    "F1 Score": 0.66328125
+}

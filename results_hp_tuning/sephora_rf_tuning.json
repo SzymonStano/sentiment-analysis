@@ -1,0 +1,12 @@
+{
+    "dataset": "sephora",
+    "model": "rf",
+    "best_params": {
+        "clf__max_depth": 12,
+        "clf__min_samples_split": 5,
+        "clf__n_estimators": 87
+    },
+    "vectorizer": "tf-idf",
+    "feature_engineering": "kbest",
+    "best_score": 0.9218106795967931
+}

@@ -1,0 +1,1111 @@
+schema: '2.0'
+stages:
+  split:
+    cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/split_data.py
+    deps:
+    - path: data/preprocessed/preprocessed_data.csv
+      hash: md5
+      md5: a73d5c3b9cb78cc1576e8848d3e71ae9
+      size: 1311302823
+    - path: scripts/split_data.py
+      hash: md5
+      md5: a3a348a4aff549049feab2a6981a00a8
+      size: 1018
+    params:
+      params.yaml:
+        split.stratify: y
+        split.test_size: 0.2
+    outs:
+    - path: data/train_test/test_data.csv
+      hash: md5
+      md5: a7c81f3d746151c6c3b9463f25f90012
+      size: 262152193
+    - path: data/train_test/train_data.csv
+      hash: md5
+      md5: 4087c9a6febf7d67ad3e9fe0bc523423
+      size: 1049151193
+  train:
+    cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/train.py
+    deps:
+    - path: data/train_test/test_data_prepared.csv
+      hash: md5
+      md5: 669028bb10b9057e9d5177c32c756902
+      size: 1425886
+    - path: data/train_test/train_data_prepared.csv
+      hash: md5
+      md5: 5ad8b61af2afeb0d2ac89c3f38d6b75c
+      size: 5744913
+    - path: scripts/train.py
+      hash: md5
+      md5: cfc9f98a43417c0f6f322ee4687d0d76
+      size: 6960
+    - path: src/pipelines.py
+      hash: md5
+      md5: cc092e50aaba6f09dace4c6d419df64e
+      size: 11247
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 7113c9dc2c4788e6387caca9e1a10a73
+      size: 1503
+    params:
+      params.yaml:
+        train:
+          classifier: rf
+          kernel: linear
+          C: 1.0
+          strategy: most_frequent
+          n_estimators: 100
+          max_depth: 10
+          type: CV
+          features: text
+          feature_engineering: None
+          kbest: 15
+          explained_variance: 0.95
+          vectorizer: word2vec
+    outs:
+    - path: metrics.json
+      hash: md5
+      md5: 90c93cc519927a54665bfa5abed220bb
+      size: 285
+  preprocess:
+    cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/preprocess.py
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: 851736e26ccdd0272cddfc7a836edfd9.dir
+      size: 525703261
+      nfiles: 6
+    - path: scripts/preprocess.py
+      hash: md5
+      md5: 67900285784c8064577a77684ef21dcd
+      size: 3087
+    params:
+      params.yaml:
+        preprocess.drop_columns:
+        - 'Unnamed: 0'
+        - author_id
+        - submission_time
+        - product_name_x
+        - product_name_y
+        - brand_name_x
+        - brand_name_y
+        - price_usd_y
+    outs:
+    - path: data/preprocessed/preprocessed_data.csv
+      hash: md5
+      md5: a73d5c3b9cb78cc1576e8848d3e71ae9
+      size: 1311302823
+  eda_report:
+    cmd: HOME=/tmp XDG_CACHE_HOME=/tmp jupyter nbconvert --to notebook --execute --allow-errors
+      --output eda_output.ipynb --output-dir=data scripts/eda_analysis.ipynb
+    deps:
+    - path: data/train_test/test_data.csv
+      hash: md5
+      md5: a7c81f3d746151c6c3b9463f25f90012
+      size: 262152193
+    - path: data/train_test/train_data.csv
+      hash: md5
+      md5: 4087c9a6febf7d67ad3e9fe0bc523423
+      size: 1049151193
+    - path: scripts/eda_analysis.ipynb
+      hash: md5
+      md5: e0cb904b6ab4c1ece264c77ceeec6cc8
+      size: 23900
+    outs:
+    - path: data/eda_output.ipynb
+      hash: md5
+      md5: 895fac2d19682b7d6c8f8959f12ea95a
+      size: 28826581
+  clean_transform:
+    cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/clean_and_transform_data.py
+    deps:
+    - path: data/train_test/test_data.csv
+      hash: md5
+      md5: a7c81f3d746151c6c3b9463f25f90012
+      size: 262152193
+    - path: data/train_test/train_data.csv
+      hash: md5
+      md5: 4087c9a6febf7d67ad3e9fe0bc523423
+      size: 1049151193
+    - path: scripts/clean_and_transform_data.py
+      hash: md5
+      md5: 0229c8b44161572d167fe11ff3506188
+      size: 6998
+    outs:
+    - path: data/train_test/test_data_transformed.csv
+      hash: md5
+      md5: 3cde3edb44849095c4500a2934e5e548
+      size: 846562
+    - path: data/train_test/train_data_transformed.csv
+      hash: md5
+      md5: cdf11044415d3a9b23e5151f8536a33d
+      size: 4346796
+  clean_prepare:
+    cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/clean_and_prepare_data.py
+    deps:
+    - path: data/train_test/test_data.csv
+      hash: md5
+      md5: a7c81f3d746151c6c3b9463f25f90012
+      size: 262152193
+    - path: data/train_test/train_data.csv
+      hash: md5
+      md5: 4087c9a6febf7d67ad3e9fe0bc523423
+      size: 1049151193
+    - path: scripts/clean_and_prepare_data.py
+      hash: md5
+      md5: e2568d5271b881078fd6222a7070f34a
+      size: 8093
+    outs:
+    - path: data/train_test/test_data_transformed.csv
+      hash: md5
+      md5: b581b861d4f48a4eb8de8f93c1b5bdc7
+      size: 1132168
+    - path: data/train_test/train_data_transformed.csv
+      hash: md5
+      md5: 5ad8b61af2afeb0d2ac89c3f38d6b75c
+      size: 5744913
+  prepare:
+    cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/clean_and_prepare_data.py
+    deps:
+    - path: data/train_test/test_data.csv
+      hash: md5
+      md5: a7c81f3d746151c6c3b9463f25f90012
+      size: 262152193
+    - path: data/train_test/train_data.csv
+      hash: md5
+      md5: 4087c9a6febf7d67ad3e9fe0bc523423
+      size: 1049151193
+    - path: scripts/clean_and_prepare_data.py
+      hash: md5
+      md5: 3a4acbd5296744952cbe412a7f9a46be
+      size: 3221
+    outs:
+    - path: data/train_test/test_data_prepared.csv
+      hash: md5
+      md5: 669028bb10b9057e9d5177c32c756902
+      size: 1425886
+    - path: data/train_test/train_data_prepared.csv
+      hash: md5
+      md5: 5ad8b61af2afeb0d2ac89c3f38d6b75c
+      size: 5744913
+  preprocess@sephora:
+    cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/preprocess.py --dataset sephora
+    deps:
+    - path: data/raw/sephora
+      hash: md5
+      md5: 851736e26ccdd0272cddfc7a836edfd9.dir
+      size: 525703261
+      nfiles: 6
+    - path: scripts/preprocess.py
+      hash: md5
+      md5: f8056c6157ebaee5d37cf72e90fc6d45
+      size: 2567
+    params:
+      params.yaml:
+        datasets.sephora:
+          product_path: /app/data/raw/sephora/product_info.csv
+          review_glob: /app/data/raw//sephora/reviews_*.csv
+          merge_on: product_id
+          drop_columns:
+          - 'Unnamed: 0'
+          - author_id
+          - submission_time
+          - product_name_x
+          - product_name_y
+          - brand_name_x
+          - brand_name_y
+          - price_usd_y
+          label_column: LABEL-is_recommended
+          max_samples: 10000
+    outs:
+    - path: data/preprocessed/sephora/preprocessed.csv
+      hash: md5
+      md5: 61f2c28bfc8f6b7bb24475142e0c4e18
+      size: 13999539
+  preprocess@movies:
+    cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/preprocess.py --dataset movies
+    deps:
+    - path: data/raw/movies
+      hash: md5
+      md5: d803e9b5c7b9066535bc527dd8f89f79.dir
+      size: 1238458
+      nfiles: 2
+    - path: scripts/preprocess.py
+      hash: md5
+      md5: f8056c6157ebaee5d37cf72e90fc6d45
+      size: 2567
+    params:
+      params.yaml:
+        datasets.movies:
+          pos_path: /app/data/raw/movies/rt-polarity.pos
+          neg_path: /app/data/raw/movies/rt-polarity.neg
+          encoding: latin-1
+          drop_columns: []
+          label_column: class
+    outs:
+    - path: data/preprocessed/movies/preprocessed.csv
+      hash: md5
+      md5: c608ff8b1ea6c6596566f16e4ce6eabf
+      size: 1262721
+  split@sephora:
+    cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/split_data.py --dataset sephora
+    deps:
+    - path: data/preprocessed/sephora/preprocessed.csv
+      hash: md5
+      md5: 61f2c28bfc8f6b7bb24475142e0c4e18
+      size: 13999539
+    - path: scripts/split_data.py
+      hash: md5
+      md5: 657702a347ee3f41b73348757417d094
+      size: 1372
+    params:
+      params.yaml:
+        datasets.sephora:
+          product_path: /app/data/raw/sephora/product_info.csv
+          review_glob: /app/data/raw//sephora/reviews_*.csv
+          merge_on: product_id
+          drop_columns:
+          - 'Unnamed: 0'
+          - author_id
+          - submission_time
+          - product_name_x
+          - product_name_y
+          - brand_name_x
+          - brand_name_y
+          - price_usd_y
+          label_column: LABEL-is_recommended
+          max_samples: 10000
+        split:
+          test_size: 0.2
+          stratify: y
+    outs:
+    - path: data/train_test/sephora_test_data.csv
+      hash: md5
+      md5: aa966a9064865422d02854a3b1e5728a
+      size: 2817568
+    - path: data/train_test/sephora_train_data.csv
+      hash: md5
+      md5: 2b94ed41945d6e20e195047e4ae2e266
+      size: 11182464
+  split@movies:
+    cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/split_data.py --dataset movies
+    deps:
+    - path: data/preprocessed/movies/preprocessed.csv
+      hash: md5
+      md5: c608ff8b1ea6c6596566f16e4ce6eabf
+      size: 1262721
+    - path: scripts/split_data.py
+      hash: md5
+      md5: 657702a347ee3f41b73348757417d094
+      size: 1372
+    params:
+      params.yaml:
+        datasets.movies:
+          pos_path: /app/data/raw/movies/rt-polarity.pos
+          neg_path: /app/data/raw/movies/rt-polarity.neg
+          encoding: latin-1
+          drop_columns: []
+          label_column: class
+        split:
+          test_size: 0.2
+          stratify: y
+    outs:
+    - path: data/train_test/movies_test_data.csv
+      hash: md5
+      md5: 42678e90fa983e758e3eb2b0b25808c9
+      size: 252355
+    - path: data/train_test/movies_train_data.csv
+      hash: md5
+      md5: 6ee8611446bd4e19e231c559e94c270c
+      size: 1010377
+  eda_report@sephora:
+    cmd: HOME=/tmp XDG_CACHE_HOME=/tmp DATASET=sephora jupyter nbconvert --to notebook
+      --execute --allow-errors --output sephora_eda_output.ipynb --output-dir=data
+      scripts/eda_analysis.ipynb
+    deps:
+    - path: data/train_test/sephora_test_data.csv
+      hash: md5
+      md5: aa966a9064865422d02854a3b1e5728a
+      size: 2817568
+    - path: data/train_test/sephora_train_data.csv
+      hash: md5
+      md5: 2b94ed41945d6e20e195047e4ae2e266
+      size: 11182464
+    - path: scripts/eda_analysis.ipynb
+      hash: md5
+      md5: 2676f3c088c93d21f3f5beb8722a3ec6
+      size: 3998
+    params:
+      params.yaml:
+        datasets.sephora:
+          product_path: /app/data/raw/sephora/product_info.csv
+          review_glob: /app/data/raw//sephora/reviews_*.csv
+          merge_on: product_id
+          drop_columns:
+          - 'Unnamed: 0'
+          - author_id
+          - submission_time
+          - product_name_x
+          - product_name_y
+          - brand_name_x
+          - brand_name_y
+          - price_usd_y
+          label_column: LABEL-is_recommended
+          max_samples: 10000
+    outs:
+    - path: data/sephora_eda_output.ipynb
+      hash: md5
+      md5: 3997ee4c81ae1202f2cd0fc28cf4d313
+      size: 18258824
+  eda_report@movies:
+    cmd: HOME=/tmp XDG_CACHE_HOME=/tmp DATASET=movies jupyter nbconvert --to notebook
+      --execute --allow-errors --output movies_eda_output.ipynb --output-dir=data
+      scripts/eda_analysis.ipynb
+    deps:
+    - path: data/train_test/movies_test_data.csv
+      hash: md5
+      md5: 42678e90fa983e758e3eb2b0b25808c9
+      size: 252355
+    - path: data/train_test/movies_train_data.csv
+      hash: md5
+      md5: 6ee8611446bd4e19e231c559e94c270c
+      size: 1010377
+    - path: scripts/eda_analysis.ipynb
+      hash: md5
+      md5: 2676f3c088c93d21f3f5beb8722a3ec6
+      size: 3998
+    params:
+      params.yaml:
+        datasets.movies:
+          pos_path: /app/data/raw/movies/rt-polarity.pos
+          neg_path: /app/data/raw/movies/rt-polarity.neg
+          encoding: latin-1
+          drop_columns: []
+          label_column: class
+    outs:
+    - path: data/movies_eda_output.ipynb
+      hash: md5
+      md5: 0bfd18502e1e15c3285a687f3271dcc2
+      size: 940250
+  prepare@movies:
+    cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/clean_and_prepare_data.py --dataset
+      movies
+    deps:
+    - path: data/train_test/movies_test_data.csv
+      hash: md5
+      md5: 42678e90fa983e758e3eb2b0b25808c9
+      size: 252355
+    - path: data/train_test/movies_train_data.csv
+      hash: md5
+      md5: 6ee8611446bd4e19e231c559e94c270c
+      size: 1010377
+    - path: scripts/clean_and_prepare_data.py
+      hash: md5
+      md5: 11b49b7dffc13ab9b2cedde25a986869
+      size: 3001
+    params:
+      params.yaml:
+        clean.movies:
+          drop_columns: []
+    outs:
+    - path: data/train_test/movies_test_data_prepared.csv
+      hash: md5
+      md5: dd278642ce4863be4debb0f2a5d6a4c0
+      size: 252364
+    - path: data/train_test/movies_train_data_prepared.csv
+      hash: md5
+      md5: 311945be0111b9485e5720acc7d9ac84
+      size: 1010386
+  prepare@sephora:
+    cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/clean_and_prepare_data.py --dataset
+      sephora
+    deps:
+    - path: data/train_test/sephora_test_data.csv
+      hash: md5
+      md5: aa966a9064865422d02854a3b1e5728a
+      size: 2817568
+    - path: data/train_test/sephora_train_data.csv
+      hash: md5
+      md5: 2b94ed41945d6e20e195047e4ae2e266
+      size: 11182464
+    - path: scripts/clean_and_prepare_data.py
+      hash: md5
+      md5: 11b49b7dffc13ab9b2cedde25a986869
+      size: 3001
+    params:
+      params.yaml:
+        clean.sephora:
+          drop_columns:
+          - variation_desc
+          - value_price_usd
+          - sale_price_usd
+          - child_max_price
+          - child_min_price
+          - primary_category
+          - size
+          - variation_value
+          - ingredients
+    outs:
+    - path: data/train_test/sephora_test_data_prepared.csv
+      hash: md5
+      md5: 461e79533e7ea4eca572e3f8b183e60f
+      size: 1123765
+    - path: data/train_test/sephora_train_data_prepared.csv
+      hash: md5
+      md5: c126d8b0329abc28c32faeeac2495e9a
+      size: 4483646
+  train@movies:
+    cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/train.py --dataset movies
+    deps:
+    - path: data/train_test/movies_test_data_prepared.csv
+      hash: md5
+      md5: d1f135b53e587a5785a843a20b06afa1
+      size: 255865
+    - path: data/train_test/movies_train_data_prepared.csv
+      hash: md5
+      md5: 14c3b9b02491b2e4479a4702e24f7be2
+      size: 1006885
+    - path: scripts/train.py
+      hash: md5
+      md5: 31c8bd5865d1ade711268ef98feb9365
+      size: 7291
+    - path: src/pipelines.py
+      hash: md5
+      md5: bcaf6540c6f804eaa2d17131718fc9ee
+      size: 11284
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 60f0df0c5b52afb2d716d87de3d5a7a8
+      size: 5761
+    params:
+      params.yaml:
+        train:
+          classifier: rf
+          kernel: linear
+          C: 1.0
+          strategy: most_frequent
+          n_estimators: 100
+          max_depth: 10
+          type: CV
+          features: text
+          feature_engineering: None
+          kbest: 15
+          explained_variance: 0.95
+          vectorizer: bow
+    outs:
+    - path: metrics_movies.json
+      hash: md5
+      md5: 5b0d8a75e213b06d34dd384d14990a30
+      size: 266
+  train@sephora:
+    cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/train.py --dataset sephora
+    deps:
+    - path: data/train_test/sephora_test_data_prepared.csv
+      hash: md5
+      md5: a8f1877f7c87a8026540ffcd655197c5
+      size: 1128310
+    - path: data/train_test/sephora_train_data_prepared.csv
+      hash: md5
+      md5: 912316745fe4126578e143d72f27af36
+      size: 4479101
+    - path: scripts/train.py
+      hash: md5
+      md5: 31c8bd5865d1ade711268ef98feb9365
+      size: 7291
+    - path: src/pipelines.py
+      hash: md5
+      md5: bcaf6540c6f804eaa2d17131718fc9ee
+      size: 11284
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 60f0df0c5b52afb2d716d87de3d5a7a8
+      size: 5761
+    params:
+      params.yaml:
+        train:
+          classifier: rf
+          kernel: linear
+          C: 1.0
+          strategy: most_frequent
+          n_estimators: 100
+          max_depth: 10
+          type: CV
+          features: text
+          feature_engineering: None
+          kbest: 15
+          explained_variance: 0.95
+          vectorizer: bow
+    outs:
+    - path: metrics_sephora.json
+      hash: md5
+      md5: 8948359b4c95266a35460a0171411706
+      size: 280
+  train@0:
+    cmd: "PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/train.py --dataset sephora
+      --model rf\n"
+    deps:
+    - path: data/train_test/sephora_test_data_prepared.csv
+      hash: md5
+      md5: 461e79533e7ea4eca572e3f8b183e60f
+      size: 1123765
+    - path: data/train_test/sephora_train_data_prepared.csv
+      hash: md5
+      md5: c126d8b0329abc28c32faeeac2495e9a
+      size: 4483646
+    - path: results_hp_tuning/sephora_rf_tuning.json
+      hash: md5
+      md5: ac35dda14a7e14a6b282fdc2fa64a593
+      size: 276
+    - path: scripts/train.py
+      hash: md5
+      md5: cc05c2cfdd20895efc3d47e86b880bee
+      size: 3468
+    - path: src/pipelines.py
+      hash: md5
+      md5: 00197f2652203523833ef06c372b71da
+      size: 5050
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 54ffead144b483620664a8fdb792bb25
+      size: 1780
+    - path: src/word2vec.py
+      hash: md5
+      md5: 2d0128d8076bf4e0c1fcc6a9b9b133c6
+      size: 926
+    params:
+      params.yaml:
+        datasets.sephora.label_column: LABEL-is_recommended
+        train.feature_engineering: kbest
+        train.vectorizer: tf-idf
+    outs:
+    - path: results_final/sephora_rf_final_metrics.json
+      hash: md5
+      md5: e257c7900c53af3331106593422bd220
+      size: 296
+  train@1:
+    cmd: "PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/train.py --dataset sephora
+      --model svm\n"
+    deps:
+    - path: data/train_test/sephora_test_data_prepared.csv
+      hash: md5
+      md5: 461e79533e7ea4eca572e3f8b183e60f
+      size: 1123765
+    - path: data/train_test/sephora_train_data_prepared.csv
+      hash: md5
+      md5: c126d8b0329abc28c32faeeac2495e9a
+      size: 4483646
+    - path: results_hp_tuning/sephora_svm_tuning.json
+      hash: md5
+      md5: e4d41ee8a8b1d931ae2f4e4dc0f8f17a
+      size: 292
+    - path: scripts/train.py
+      hash: md5
+      md5: cc05c2cfdd20895efc3d47e86b880bee
+      size: 3468
+    - path: src/pipelines.py
+      hash: md5
+      md5: 00197f2652203523833ef06c372b71da
+      size: 5050
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 54ffead144b483620664a8fdb792bb25
+      size: 1780
+    - path: src/word2vec.py
+      hash: md5
+      md5: 2d0128d8076bf4e0c1fcc6a9b9b133c6
+      size: 926
+    params:
+      params.yaml:
+        datasets.sephora.label_column: LABEL-is_recommended
+        train.feature_engineering: kbest
+        train.vectorizer: tf-idf
+    outs:
+    - path: results_final/sephora_svm_final_metrics.json
+      hash: md5
+      md5: fc5eaf82d91c058dd9de27cdd1d47046
+      size: 313
+  train@2:
+    cmd: "PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/train.py --dataset sephora
+      --model dummy\n"
+    deps:
+    - path: data/train_test/sephora_test_data_prepared.csv
+      hash: md5
+      md5: 461e79533e7ea4eca572e3f8b183e60f
+      size: 1123765
+    - path: data/train_test/sephora_train_data_prepared.csv
+      hash: md5
+      md5: c126d8b0329abc28c32faeeac2495e9a
+      size: 4483646
+    - path: results_hp_tuning/sephora_dummy_tuning.json
+      hash: md5
+      md5: fcc83c626146a49b7468ed436dfdc27b
+      size: 208
+    - path: scripts/train.py
+      hash: md5
+      md5: cc05c2cfdd20895efc3d47e86b880bee
+      size: 3468
+    - path: src/pipelines.py
+      hash: md5
+      md5: 00197f2652203523833ef06c372b71da
+      size: 5050
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 54ffead144b483620664a8fdb792bb25
+      size: 1780
+    - path: src/word2vec.py
+      hash: md5
+      md5: 2d0128d8076bf4e0c1fcc6a9b9b133c6
+      size: 926
+    params:
+      params.yaml:
+        datasets.sephora.label_column: LABEL-is_recommended
+        train.feature_engineering: kbest
+        train.vectorizer: tf-idf
+    outs:
+    - path: results_final/sephora_dummy_final_metrics.json
+      hash: md5
+      md5: e6d24e28760736c1b673e891e070dd76
+      size: 237
+  train@3:
+    cmd: "PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/train.py --dataset movies
+      --model rf\n"
+    deps:
+    - path: data/train_test/movies_test_data_prepared.csv
+      hash: md5
+      md5: dd278642ce4863be4debb0f2a5d6a4c0
+      size: 252364
+    - path: data/train_test/movies_train_data_prepared.csv
+      hash: md5
+      md5: 311945be0111b9485e5720acc7d9ac84
+      size: 1010386
+    - path: results_hp_tuning/movies_rf_tuning.json
+      hash: md5
+      md5: 244389612575845651691b5bbaee5f1d
+      size: 274
+    - path: scripts/train.py
+      hash: md5
+      md5: cc05c2cfdd20895efc3d47e86b880bee
+      size: 3468
+    - path: src/pipelines.py
+      hash: md5
+      md5: 00197f2652203523833ef06c372b71da
+      size: 5050
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 54ffead144b483620664a8fdb792bb25
+      size: 1780
+    - path: src/word2vec.py
+      hash: md5
+      md5: 2d0128d8076bf4e0c1fcc6a9b9b133c6
+      size: 926
+    params:
+      params.yaml:
+        datasets.movies.label_column: class
+        train.feature_engineering: kbest
+        train.vectorizer: tf-idf
+    outs:
+    - path: results_final/movies_rf_final_metrics.json
+      hash: md5
+      md5: c67fb71794ea8f3dd3d9fe46fe199728
+      size: 287
+  train@4:
+    cmd: "PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/train.py --dataset movies
+      --model svm\n"
+    deps:
+    - path: data/train_test/movies_test_data_prepared.csv
+      hash: md5
+      md5: dd278642ce4863be4debb0f2a5d6a4c0
+      size: 252364
+    - path: data/train_test/movies_train_data_prepared.csv
+      hash: md5
+      md5: 311945be0111b9485e5720acc7d9ac84
+      size: 1010386
+    - path: results_hp_tuning/movies_svm_tuning.json
+      hash: md5
+      md5: a5edcd21f4e016f0f9058d2b3bb5205f
+      size: 288
+    - path: scripts/train.py
+      hash: md5
+      md5: cc05c2cfdd20895efc3d47e86b880bee
+      size: 3468
+    - path: src/pipelines.py
+      hash: md5
+      md5: 00197f2652203523833ef06c372b71da
+      size: 5050
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 54ffead144b483620664a8fdb792bb25
+      size: 1780
+    - path: src/word2vec.py
+      hash: md5
+      md5: 2d0128d8076bf4e0c1fcc6a9b9b133c6
+      size: 926
+    params:
+      params.yaml:
+        datasets.movies.label_column: class
+        train.feature_engineering: kbest
+        train.vectorizer: tf-idf
+    outs:
+    - path: results_final/movies_svm_final_metrics.json
+      hash: md5
+      md5: 0bdab004b187eda9eb52445291cb721a
+      size: 264
+  train@5:
+    cmd: "PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/train.py --dataset movies
+      --model dummy\n"
+    deps:
+    - path: data/train_test/movies_test_data_prepared.csv
+      hash: md5
+      md5: dd278642ce4863be4debb0f2a5d6a4c0
+      size: 252364
+    - path: data/train_test/movies_train_data_prepared.csv
+      hash: md5
+      md5: 311945be0111b9485e5720acc7d9ac84
+      size: 1010386
+    - path: results_hp_tuning/movies_dummy_tuning.json
+      hash: md5
+      md5: c1cad49ed9ca64ff479b517112c5e8bc
+      size: 207
+    - path: scripts/train.py
+      hash: md5
+      md5: cc05c2cfdd20895efc3d47e86b880bee
+      size: 3468
+    - path: src/pipelines.py
+      hash: md5
+      md5: 00197f2652203523833ef06c372b71da
+      size: 5050
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 54ffead144b483620664a8fdb792bb25
+      size: 1780
+    - path: src/word2vec.py
+      hash: md5
+      md5: 2d0128d8076bf4e0c1fcc6a9b9b133c6
+      size: 926
+    params:
+      params.yaml:
+        datasets.movies.label_column: class
+        train.feature_engineering: kbest
+        train.vectorizer: tf-idf
+    outs:
+    - path: results_final/movies_dummy_final_metrics.json
+      hash: md5
+      md5: 5e012ed5a6fe534dab10a5cf37abbac5
+      size: 206
+  tune@sephora:
+    cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/feature_engineering_and_hp_tuning.py
+      --dataset sephora
+    deps:
+    - path: data/train_test/sephora_test_data_prepared.csv
+      hash: md5
+      md5: a8f1877f7c87a8026540ffcd655197c5
+      size: 1128310
+    - path: data/train_test/sephora_train_data_prepared.csv
+      hash: md5
+      md5: 912316745fe4126578e143d72f27af36
+      size: 4479101
+    - path: scripts/feature_engineering_and_hp_tuning.py
+      hash: md5
+      md5: 162c33775add73efa20ef53ae4d4105a
+      size: 2954
+    - path: src/pipelines.py
+      hash: md5
+      md5: 5454f4949e99af57141d1c3255e48a3b
+      size: 11660
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 60f0df0c5b52afb2d716d87de3d5a7a8
+      size: 5761
+    params:
+      params.yaml:
+        train:
+          classifier: rf
+          kernel: linear
+          C: 1.0
+          strategy: most_frequent
+          n_estimators: 100
+          max_depth: 10
+          type: CV
+          features: text
+          feature_engineering: None
+          kbest: 15
+          explained_variance: 0.95
+          vectorizer: bow
+  tune@movies:
+    cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/feature_engineering_and_hp_tuning.py
+      --dataset movies
+    deps:
+    - path: data/train_test/movies_test_data_prepared.csv
+      hash: md5
+      md5: d1f135b53e587a5785a843a20b06afa1
+      size: 255865
+    - path: data/train_test/movies_train_data_prepared.csv
+      hash: md5
+      md5: 14c3b9b02491b2e4479a4702e24f7be2
+      size: 1006885
+    - path: scripts/feature_engineering_and_hp_tuning.py
+      hash: md5
+      md5: 162c33775add73efa20ef53ae4d4105a
+      size: 2954
+    - path: src/pipelines.py
+      hash: md5
+      md5: 5454f4949e99af57141d1c3255e48a3b
+      size: 11660
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 60f0df0c5b52afb2d716d87de3d5a7a8
+      size: 5761
+    params:
+      params.yaml:
+        train:
+          classifier: rf
+          kernel: linear
+          C: 1.0
+          strategy: most_frequent
+          n_estimators: 100
+          max_depth: 10
+          type: CV
+          features: text
+          feature_engineering: None
+          kbest: 15
+          explained_variance: 0.95
+          vectorizer: bow
+  tune@0:
+    cmd: "PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/hp_tune.py --dataset sephora
+      --model rf\n"
+    deps:
+    - path: data/train_test/sephora_train_data_prepared.csv
+      hash: md5
+      md5: c126d8b0329abc28c32faeeac2495e9a
+      size: 4483646
+    - path: scripts/hp_tune.py
+      hash: md5
+      md5: ca94ddfb382aad20f18a578ad5501186
+      size: 4200
+    - path: src/pipelines.py
+      hash: md5
+      md5: 00197f2652203523833ef06c372b71da
+      size: 5050
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 54ffead144b483620664a8fdb792bb25
+      size: 1780
+    - path: src/word2vec.py
+      hash: md5
+      md5: 2d0128d8076bf4e0c1fcc6a9b9b133c6
+      size: 926
+    params:
+      params.yaml:
+        datasets.sephora.label_column: LABEL-is_recommended
+        train.feature_engineering: kbest
+        train.vectorizer: tf-idf
+        tune:
+          tune_samples: 2500
+          random_search_iter: 15
+    outs:
+    - path: results_hp_tuning/sephora_rf_tuning.json
+      hash: md5
+      md5: ac35dda14a7e14a6b282fdc2fa64a593
+      size: 276
+  tune@1:
+    cmd: "PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/hp_tune.py --dataset sephora
+      --model svm\n"
+    deps:
+    - path: data/train_test/sephora_train_data_prepared.csv
+      hash: md5
+      md5: c126d8b0329abc28c32faeeac2495e9a
+      size: 4483646
+    - path: scripts/hp_tune.py
+      hash: md5
+      md5: ca94ddfb382aad20f18a578ad5501186
+      size: 4200
+    - path: src/pipelines.py
+      hash: md5
+      md5: 00197f2652203523833ef06c372b71da
+      size: 5050
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 54ffead144b483620664a8fdb792bb25
+      size: 1780
+    - path: src/word2vec.py
+      hash: md5
+      md5: 2d0128d8076bf4e0c1fcc6a9b9b133c6
+      size: 926
+    params:
+      params.yaml:
+        datasets.sephora.label_column: LABEL-is_recommended
+        train.feature_engineering: kbest
+        train.vectorizer: tf-idf
+        tune:
+          tune_samples: 2500
+          random_search_iter: 15
+    outs:
+    - path: results_hp_tuning/sephora_svm_tuning.json
+      hash: md5
+      md5: e4d41ee8a8b1d931ae2f4e4dc0f8f17a
+      size: 292
+  tune@2:
+    cmd: "PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/hp_tune.py --dataset sephora
+      --model dummy\n"
+    deps:
+    - path: data/train_test/sephora_train_data_prepared.csv
+      hash: md5
+      md5: c126d8b0329abc28c32faeeac2495e9a
+      size: 4483646
+    - path: scripts/hp_tune.py
+      hash: md5
+      md5: ca94ddfb382aad20f18a578ad5501186
+      size: 4200
+    - path: src/pipelines.py
+      hash: md5
+      md5: 00197f2652203523833ef06c372b71da
+      size: 5050
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 54ffead144b483620664a8fdb792bb25
+      size: 1780
+    - path: src/word2vec.py
+      hash: md5
+      md5: 2d0128d8076bf4e0c1fcc6a9b9b133c6
+      size: 926
+    params:
+      params.yaml:
+        datasets.sephora.label_column: LABEL-is_recommended
+        train.feature_engineering: kbest
+        train.vectorizer: tf-idf
+        tune:
+          tune_samples: 2500
+          random_search_iter: 15
+    outs:
+    - path: results_hp_tuning/sephora_dummy_tuning.json
+      hash: md5
+      md5: fcc83c626146a49b7468ed436dfdc27b
+      size: 208
+  tune@3:
+    cmd: "PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/hp_tune.py --dataset movies
+      --model rf\n"
+    deps:
+    - path: data/train_test/movies_train_data_prepared.csv
+      hash: md5
+      md5: 311945be0111b9485e5720acc7d9ac84
+      size: 1010386
+    - path: scripts/hp_tune.py
+      hash: md5
+      md5: ca94ddfb382aad20f18a578ad5501186
+      size: 4200
+    - path: src/pipelines.py
+      hash: md5
+      md5: 00197f2652203523833ef06c372b71da
+      size: 5050
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 54ffead144b483620664a8fdb792bb25
+      size: 1780
+    - path: src/word2vec.py
+      hash: md5
+      md5: 2d0128d8076bf4e0c1fcc6a9b9b133c6
+      size: 926
+    params:
+      params.yaml:
+        datasets.movies.label_column: class
+        train.feature_engineering: kbest
+        train.vectorizer: tf-idf
+        tune:
+          tune_samples: 2500
+          random_search_iter: 15
+    outs:
+    - path: results_hp_tuning/movies_rf_tuning.json
+      hash: md5
+      md5: 244389612575845651691b5bbaee5f1d
+      size: 274
+  tune@4:
+    cmd: "PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/hp_tune.py --dataset movies
+      --model svm\n"
+    deps:
+    - path: data/train_test/movies_train_data_prepared.csv
+      hash: md5
+      md5: 311945be0111b9485e5720acc7d9ac84
+      size: 1010386
+    - path: scripts/hp_tune.py
+      hash: md5
+      md5: ca94ddfb382aad20f18a578ad5501186
+      size: 4200
+    - path: src/pipelines.py
+      hash: md5
+      md5: 00197f2652203523833ef06c372b71da
+      size: 5050
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 54ffead144b483620664a8fdb792bb25
+      size: 1780
+    - path: src/word2vec.py
+      hash: md5
+      md5: 2d0128d8076bf4e0c1fcc6a9b9b133c6
+      size: 926
+    params:
+      params.yaml:
+        datasets.movies.label_column: class
+        train.feature_engineering: kbest
+        train.vectorizer: tf-idf
+        tune:
+          tune_samples: 2500
+          random_search_iter: 15
+    outs:
+    - path: results_hp_tuning/movies_svm_tuning.json
+      hash: md5
+      md5: a5edcd21f4e016f0f9058d2b3bb5205f
+      size: 288
+  tune@5:
+    cmd: "PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/hp_tune.py --dataset movies
+      --model dummy\n"
+    deps:
+    - path: data/train_test/movies_train_data_prepared.csv
+      hash: md5
+      md5: 311945be0111b9485e5720acc7d9ac84
+      size: 1010386
+    - path: scripts/hp_tune.py
+      hash: md5
+      md5: ca94ddfb382aad20f18a578ad5501186
+      size: 4200
+    - path: src/pipelines.py
+      hash: md5
+      md5: 00197f2652203523833ef06c372b71da
+      size: 5050
+    - path: src/text_cleaner.py
+      hash: md5
+      md5: 54ffead144b483620664a8fdb792bb25
+      size: 1780
+    - path: src/word2vec.py
+      hash: md5
+      md5: 2d0128d8076bf4e0c1fcc6a9b9b133c6
+      size: 926
+    params:
+      params.yaml:
+        datasets.movies.label_column: class
+        train.feature_engineering: kbest
+        train.vectorizer: tf-idf
+        tune:
+          tune_samples: 2500
+          random_search_iter: 15
+    outs:
+    - path: results_hp_tuning/movies_dummy_tuning.json
+      hash: md5
+      md5: c1cad49ed9ca64ff479b517112c5e8bc
+      size: 207
+  summarize:
+    cmd: python scripts/generate_final_table.py
+    deps:
+    - path: results_final
+      hash: md5
+      md5: 4de6e8d63bac7d8d456c0e3a63ba8799.dir
+      size: 1794
+      nfiles: 7
+    - path: scripts/generate_final_table.py
+      hash: md5
+      md5: 1aecaeed12feb0e62da3adc4cd20a351
+      size: 1373
+    outs:
+    - path: final_table.md
+      hash: md5
+      md5: d28ce2b309b18a8c753253e4fbf51d9c
+      size: 943

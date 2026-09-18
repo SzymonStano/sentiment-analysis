@@ -1,0 +1,11 @@
+{
+    "Dataset": "movies",
+    "Model": "dummy",
+    "Params": {
+        "strategy": "most_frequent"
+    },
+    "Accuracy": 0.4997655883731833,
+    "Precision": 0.0,
+    "Recall": 0.0,
+    "F1 Score": 0.0
+}

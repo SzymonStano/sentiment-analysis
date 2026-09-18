@@ -1,0 +1,13 @@
+{
+    "Dataset": "movies",
+    "Model": "svm",
+    "Params": {
+        "C": 0.01129951608310662,
+        "gamma": 0.06708188643346288,
+        "kernel": "rbf"
+    },
+    "Accuracy": 0.4997655883731833,
+    "Precision": 0.0,
+    "Recall": 0.0,
+    "F1 Score": 0.0
+}

@@ -1,0 +1,12 @@
+{
+    "dataset": "movies",
+    "model": "rf",
+    "best_params": {
+        "clf__max_depth": 10,
+        "clf__min_samples_split": 6,
+        "clf__n_estimators": 51
+    },
+    "vectorizer": "tf-idf",
+    "feature_engineering": "kbest",
+    "best_score": 0.638120000584746
+}

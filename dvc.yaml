@@ -1,0 +1,138 @@
+stages:
+  preprocess:
+    foreach:
+      - sephora
+      - movies
+    do:
+      cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/preprocess.py --dataset ${item}
+      deps:
+        - scripts/preprocess.py
+        - data/raw/${item}
+      params:
+        - datasets.${item}
+      outs:
+        - data/preprocessed/${item}/preprocessed.csv
+
+  split:
+    foreach:
+      - sephora
+      - movies
+    do:
+      cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/split_data.py --dataset ${item}
+      deps:
+      - scripts/split_data.py
+      - data/preprocessed/${item}/preprocessed.csv
+      params:
+      - split
+      - datasets.${item}
+      outs:
+      - data/train_test/${item}_train_data.csv
+      - data/train_test/${item}_test_data.csv
+
+  eda_report:
+    foreach:
+      - movies
+      - sephora
+    do:
+      cmd: HOME=/tmp XDG_CACHE_HOME=/tmp DATASET=${item} jupyter nbconvert --to notebook --execute --allow-errors --output ${item}_eda_output.ipynb --output-dir=data scripts/eda_analysis.ipynb
+      deps:
+        - scripts/eda_analysis.ipynb
+        - data/train_test/${item}_train_data.csv
+        - data/train_test/${item}_test_data.csv
+      params:
+        - datasets.${item}
+      outs:
+        - data/${item}_eda_output.ipynb:
+            cache: false
+
+  prepare:
+    foreach:
+      - movies
+      - sephora
+    do:
+      cmd: PYTHONPATH=$(pwd):$PYTHONPATH python3 scripts/clean_and_prepare_data.py --dataset ${item}
+      deps:
+      - scripts/clean_and_prepare_data.py
+      - data/train_test/${item}_train_data.csv
+      - data/train_test/${item}_test_data.csv
+      params:
+      - clean.${item}
+      outs:
+      - data/train_test/${item}_train_data_prepared.csv
+      - data/train_test/${item}_test_data_prepared.csv
+
+  tune:
+    foreach:
+      - dataset: sephora
+        model: rf
+      - dataset: sephora
+        model: svm
+      - dataset: sephora
+        model: dummy
+      - dataset: movies
+        model: rf
+      - dataset: movies
+        model: svm
+      - dataset: movies
+        model: dummy
+    do:
+      cmd: >
+        PYTHONPATH=$(pwd):$PYTHONPATH
+        python3 scripts/hp_tune.py --dataset ${item.dataset} --model ${item.model}
+      deps:
+        - scripts/hp_tune.py
+        - src/pipelines.py
+        - src/text_cleaner.py
+        - src/word2vec.py
+        - data/train_test/${item.dataset}_train_data_prepared.csv
+      params:
+        - datasets.${item.dataset}.label_column
+        - train.feature_engineering
+        - train.vectorizer
+        - tune
+      outs:
+        - results_hp_tuning/${item.dataset}_${item.model}_tuning.json
+
+  train:
+    foreach:
+      - dataset: sephora
+        model: rf
+      - dataset: sephora
+        model: svm
+      - dataset: sephora
+        model: dummy
+      - dataset: movies
+        model: rf
+      - dataset: movies
+        model: svm
+      - dataset: movies
+        model: dummy 
+    do:
+      cmd: >
+        PYTHONPATH=$(pwd):$PYTHONPATH
+        python3 scripts/train.py
+        --dataset ${item.dataset}
+        --model ${item.model}
+      deps:
+        - scripts/train.py
+        - src/pipelines.py
+        - src/text_cleaner.py
+        - src/word2vec.py
+        - data/train_test/${item.dataset}_train_data_prepared.csv
+        - data/train_test/${item.dataset}_test_data_prepared.csv
+        - results_hp_tuning/${item.dataset}_${item.model}_tuning.json
+      params:
+        - train.feature_engineering
+        - train.vectorizer
+        - datasets.${item.dataset}.label_column
+      outs:
+        - results_final/${item.dataset}_${item.model}_final_metrics.json
+
+
+  summarize:
+    cmd: python scripts/generate_final_table.py
+    deps:
+      - scripts/generate_final_table.py
+      - results_final
+    outs:
+      - final_table.md

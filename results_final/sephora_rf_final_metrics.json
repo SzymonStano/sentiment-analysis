@@ -1,0 +1,13 @@
+{
+    "Dataset": "sephora",
+    "Model": "rf",
+    "Params": {
+        "max_depth": 12,
+        "min_samples_split": 5,
+        "n_estimators": 87
+    },
+    "Accuracy": 0.8550342646283605,
+    "Precision": 0.8659621802002224,
+    "Recall": 0.978629792583281,
+    "F1 Score": 0.9188551195042786
+}

@@ -1,0 +1,12 @@
+{
+    "dataset": "sephora",
+    "model": "svm",
+    "best_params": {
+        "clf__C": 85.68869785189007,
+        "clf__gamma": 0.0025135566617708314,
+        "clf__kernel": "linear"
+    },
+    "vectorizer": "tf-idf",
+    "feature_engineering": "kbest",
+    "best_score": 0.9207771551650245
+}
